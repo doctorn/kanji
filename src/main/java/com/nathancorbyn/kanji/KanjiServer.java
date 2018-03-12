@@ -33,7 +33,8 @@ public class KanjiServer {
         }
 
         staticFiles.externalLocation("static/");
-        ENGINE = new PebbleEngine.Builder().build();
+        ENGINE = new PebbleEngine.Builder()
+            .templateCache(null).tagCache(null).build();
         get("/all", (req, res) -> {
             Map<String, Object> context = new HashMap<>();
             context.put("kanji", KANJI);
