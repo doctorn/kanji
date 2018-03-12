@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>All Kanji</title>
+    </head>
+    <body>
+        {% for character in kanji %}
+        <a href="/view?id={{ character.getCharacter }}">{{ character.getCharacter }}</a>
+        {% endfor %}
+    </body>
+</html>

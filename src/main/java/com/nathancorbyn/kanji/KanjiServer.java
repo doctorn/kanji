@@ -1,12 +1,17 @@
 package com.nathancorbyn.kanji;
 
+import com.mitchellbosecke.pebble.PebbleEngine;
+import com.mitchellbosecke.pebble.error.PebbleException;
+import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.Stack;
@@ -15,7 +20,8 @@ import static spark.Spark.*;
 
 public class KanjiServer {
     private static final String DATA = "data/jouyou_decomposition";
-    private static List<Kanji> kanji;
+    private static List<Kanji> KANJI = new ArrayList<>();
+    private static PebbleEngine ENGINE;    
 
     public static void main(String args[]) {
         try {
@@ -26,11 +32,31 @@ public class KanjiServer {
             System.exit(1);
         }
 
-        get("/all", (req, res) -> "Hello world");
+        ENGINE = new PebbleEngine.Builder().build();
+        get("/all", (req, res) -> {
+            Map<String, Object> context = new HashMap<>();
+            context.put("kanji", KANJI);
+            try {
+                return render("./templates/index.html", context);
+            } catch(IOException e) {
+                e.printStackTrace();
+                return e.getMessage();
+            } catch(PebbleException e) {
+                e.printStackTrace();
+                return e.getMessage();
+            }
+        });
+    }
+
+    public static String render(String template, Map<String, Object> context) 
+            throws PebbleException, IOException {
+        PebbleTemplate compiledTemplate = ENGINE.getTemplate(template);
+        Writer writer = new StringWriter();
+        compiledTemplate.evaluate(writer, context);
+        return writer.toString();
     }
 
     public static void loadData() throws IOException {
-        kanji = new ArrayList<>();
         BufferedReader br = new BufferedReader(new FileReader(new File(DATA)));
 
         String line;
@@ -81,7 +107,7 @@ public class KanjiServer {
                 if (!brokenDependency) {
                     Kanji temp = new Kanji(character, components);
                     resolved.put(character, temp);
-                    kanji.add(temp);
+                    KANJI.add(temp);
                     System.out.println(temp.toJSON().toString());
                     toResolve.remove(character);
                 }
