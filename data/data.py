@@ -6,21 +6,52 @@ kanji = kanji_file.readlines()
 for x in range(0, len(kanji)):
     kanji[x] = kanji[x].split("\n")[0] 
 
-decomposition_file = open("decomp", "r")
 decomposition = []
+loaded = []
 
-for point in decomposition_file:
-    point = point.split(":")
-    # Filter out all characters apart from the desired Kanji
-    if point[0] in kanji:
-        character = point[0] + ":"
-        # This step filters out underdefined and noisy decompositions
-        components = (point[1])[:-2].split("(")[1].split(",")
-        for component in components:
-            if len(component) == 1:
-                character = character + component + ","
-        character = character[:-1] + "\n"
-        decomposition.append(character)
+def pseudo_load(character):
+    pseudo_character = ""
+    decomposition_file = open("decomp", "r")
+    for point in decomposition_file:
+        if point.startswith(character):
+            components = (point.split(":")[1])[:-2].split("(")[1].split(",")
+            for component in components:
+                if len(component) == 1:
+                    if component not in kanji:
+                        kanji.append(component)
+                    pseudo_character = pseudo_character + component + ","
+                else:
+                    pseudo_character = pseudo_character + pseudo_load(component)
+            break
+    return pseudo_character
+
+
+def load(character):
+    decomposition_file = open("decomp", "r")
+    for point in decomposition_file:
+        if point.startswith(character):
+            print(character)
+            character = character + ":"
+            components = (point.split(":")[1])[:-2].split("(")[1].split(",")
+            for component in components:
+                if len(component) == 1:
+                    if component not in kanji:
+                        kanji.append(component)
+                    character = character + component + ","
+                else:
+                    character = character + pseudo_load(component)
+            character = character[:-1] + "\n"
+            decomposition.append(character)
+            print(character)
+            break
+
+for character in kanji:
+    load(character)
+
+for index, character in enumerate(decomposition):
+    split = character.split(":")
+    if split[0] in (split[1][:-1]).split(","):
+        decomposition[index] = split[0] 
 
 output_file = open("jouyou_decomposition", "w")
 for point in decomposition:

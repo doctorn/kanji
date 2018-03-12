@@ -102,6 +102,7 @@ public class KanjiServer {
         Map<String, Kanji> resolved = new HashMap<>();
 
         while (!toResolve.isEmpty()) {
+            System.out.println();
             String current = toResolve.first();
             toResolve.remove(current);
             Stack<String> stack = new Stack<>();
@@ -109,6 +110,7 @@ public class KanjiServer {
 
             while (!stack.isEmpty()) {
                 String character = stack.pop();
+                System.out.print(character + " ");
                 if (resolved.keySet().contains(character))
                     continue;
 
