@@ -5,7 +5,9 @@
     </head>
     <body>
         {% for character in kanji %}
-        <a href="/view?id={{ character.getCharacter }}">{{ character.getCharacter }}</a>
+        <a href="/view?kanji={{ character.getCharacter }}">
+            {{ character.getCharacter }}
+        </a>
         {% endfor %}
     </body>
 </html>

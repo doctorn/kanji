@@ -32,12 +32,33 @@ public class KanjiServer {
             System.exit(1);
         }
 
+        staticFiles.externalLocation("static/");
         ENGINE = new PebbleEngine.Builder().build();
         get("/all", (req, res) -> {
             Map<String, Object> context = new HashMap<>();
             context.put("kanji", KANJI);
             try {
                 return render("./templates/index.html", context);
+            } catch(IOException e) {
+                e.printStackTrace();
+                return e.getMessage();
+            } catch(PebbleException e) {
+                e.printStackTrace();
+                return e.getMessage();
+            }
+        });
+
+        get("/view", (req, res) -> {
+            String character = req.queryParams("kanji");
+            Map<String, Object> context = new HashMap<>();
+            context.put("character", character);
+            for (Kanji kanji : KANJI) {
+                if (kanji.getCharacter().equals(character))
+                    context.put("graph_data", kanji.toJSON().toString());
+            }
+
+            try {
+                return render("./templates/view.html", context);
             } catch(IOException e) {
                 e.printStackTrace();
                 return e.getMessage();
