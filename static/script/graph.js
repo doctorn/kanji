@@ -13,6 +13,8 @@ function Node(value) {
     this.value = value;
     this.neighbours = [];
     this.highlight = false;
+    this.hover = false;
+    this.selected = false;
 
     this.setHighlight = function(highlight) {
         this.highlight = highlight;
@@ -29,6 +31,10 @@ function Node(value) {
         }
     }
 
+    this.bounds = function(x, y) {
+        return (distance(x, this.x, y, this.y) <= this.size * this.size); 
+    }
+
     this.render = function(ctx) {
         if (!this.highlight) ctx.fillStyle = "white";
         else ctx.fillStyle = "#03A9F4";
@@ -38,14 +44,16 @@ function Node(value) {
 
         if (!this.highlight) ctx.fillStyle = "black";
         else ctx.fillStyle = "white";
-        ctx.font = "24px sans-serif";
+        ctx.font = (this.size + 4) + "px sans-serif";
         ctx.textAlign = "center";
         ctx.fillText(this.value, this.x, this.y + 8);
     }
 
     this.update = function() {
-        this.x += this.Fx;
-        this.y += this.Fy;
+        if (this.hover && this.size < 24) this.size += 1;
+        else if (!this.hover && this.size > 20) this.size -= 1;
+        if (!this.selected) this.x += this.Fx;
+        if (!this.selected) this.y += this.Fy;
     }
 
     this.addNeighbour = function(node) {
@@ -119,5 +127,42 @@ function render() {
 function addNode(node) {
     nodes.push(node);
 }
+
+function getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    };
+}
+
+canvas.addEventListener('mousemove', function(evt) {
+    var mousePos = getMousePos(canvas, evt);
+    for (var node in nodes) {
+        if (nodes[node].bounds(mousePos.x, mousePos.y))
+            nodes[node].hover = true;
+        else nodes[node].hover = false;
+
+        if (nodes[node].selected) {
+            nodes[node].x = mousePos.x;
+            nodes[node].y = mousePos.y;
+        }
+    }
+}, false);
+
+canvas.addEventListener('mousedown', function(evt) {
+    var mousePos = getMousePos(canvas, evt);
+    for (var node in nodes) {
+        if (nodes[node].bounds(mousePos.x, mousePos.y)) {
+            nodes[node].selected = true;
+            break;
+        }
+    }
+}, false);
+
+canvas.addEventListener('mouseup', function(evt) {
+    for (var node in nodes)
+        nodes[node].selected = false;
+}, false);
 
 setInterval(update, 20);
